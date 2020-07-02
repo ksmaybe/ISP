@@ -18,51 +18,49 @@ FUNC="func"
 OBJC="objc"
 
 class ABFile():
-    def __init__(self,filename,create):
+    def __init__(self,filename,version,create):
         # globals
         mycontext['debug'] = True
+        if ‘version_history' not in mycontext:
+            mycontext['version_history']={}
         # local (per object) reference to the underlying file
+        # make the ver.0 file, no longer required to write 'SE' since older vers cannot be overwritten after closing
 
-        # make the ver.1 file and add 'SE' to the readat file if new file
-
-        if create:
-            self.file1 = openfile(self.Afn,True)
-            self.file1.writeat('SE',0)
-
+        if create and filename not in mycontext['version_history']:
+            self.fn=filename+'0'
+            mycontext['version_history'][filename]=[0]
+            self.file = openfile(self.fn,True)
+            self.newfile=True
         # if not create just open file
         else:
-            self.Afile = openfile(self.Afn,False)
-
-        #create new version B file
-        self.Bfile = openfile(self.Bfn,True)
-        self.Bfile.writeat(self.Afile.readat(None,0),0)
+            self.newfile=False
+            # if specified version, retrieve it, else retrieve latest version
+            if not version:
+                self.fn=filename+str(mycontext['version_history'][filename][-1])
+            else:
+                self.fn=filename+str(mycontext['version_history'][filename][version])
+            self.file = openfile(self.fn,False)
 
 
     def writeat(self,data,offset):
-        # Write the requested data to the B file using the sandbox's writeat call
-        self.Bfile.writeat(data,offset)
+        # Write the requested data to the file using the sandbox's writeat call
+        # creates blank new file if old version was pulled up
+        # newfile allows that file to be written
+        if not self.newfile:
+            self.file.close()
+            self.fn=filename+str(len(mycontext['version_history'][filename]))
+            self.file = openfile(self.fn,True)
+            self.newfile=True
+        self.file.writeat(data,offset)
+
 
     def readat(self,bytes,offset):
-        # Read from the A file using the sandbox's readat...
-
-        return self.Afile.readat(bytes,offset)
+        # Read from the file using the sandbox's readat...
+        return self.file.readat(bytes,offset)
 
     def close(self):
-        #check if valid then overwrite
-        if self.check():
-            content=self.Afile.readat(None,0)
-            self.Afile.writeat(self.Bfile.readat(None,0),0)
-
-        self.Bfile.close()
-        self.Afile.close()
-
-    def check(self):
-        stuff=self.Bfile.readat(None,0)
-        #minimum length, start with 'S', end with 'E'
-        if len(stuff)<2 or stuff[0]!='S' or stuff[-1]!='E':
-
-            return False
-        return True
+        #no need to check if valid if old version not over written, new file will just be saved as invalid
+        self.file.close()
 
 
 
