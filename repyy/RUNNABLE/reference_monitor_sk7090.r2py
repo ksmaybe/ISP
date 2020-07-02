@@ -18,24 +18,41 @@ OBJC="objc"
 
 class ABFile():
     def __init__(self,filename,create):
+        self.valid_fn=True
+        #check filename
+        if not filename or filename[0]=='.':
+            self.valid_fn=False
+        for c in filename:
+            if c.isalpha():
+                if c.isupper():
+                    self.valid_fn=False
+            elif c.isdigit():
+                continue
+            elif c=='.' or c=='_' or c=='-':
+                continue
+            else:
+                self.valid_fn=False
+
+
         # globals
         mycontext['debug'] = True
         # local (per object) reference to the underlying file
-        self.Afn = filename+'.a'
-        self.Bfn = filename+'.b'
+        if self.valid_fn:
+            self.Afn = filename+'.a'
+            self.Bfn = filename+'.b'
 
-        # make the A file and add 'SE' to the readat file if new file
-        if create and self.Afn not in listfiles():
-            self.Afile = openfile(self.Afn,True)
-            self.Afile.writeat('SE',0)
+            # make the A file and add 'SE' to the readat file if new file
+            if create and self.Afn not in listfiles():
+                self.Afile = openfile(self.Afn,True)
+                self.Afile.writeat('SE',0)
 
-        # if not create just open file
-        else:
-            self.Afile = openfile(self.Afn,False)
+            # if not create just open file
+            else:
+                self.Afile = openfile(self.Afn,False)
 
-        #create new version B file
-        self.Bfile = openfile(self.Bfn,True)
-        self.Bfile.writeat(self.Afile.readat(None,0),0)
+            #create new version B file
+            self.Bfile = openfile(self.Bfn,True)
+            self.Bfile.writeat(self.Afile.readat(None,0),0)
 
 
     def writeat(self,data,offset):

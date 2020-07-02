@@ -19,27 +19,52 @@ OBJC="objc"
 
 class ABFile():
     def __init__(self,filename,version,create):
-        # globals
-        mycontext['debug'] = True
-        if ‘version_history' not in mycontext:
-            mycontext['version_history']={}
-        # local (per object) reference to the underlying file
-        # make the ver.0 file, no longer required to write 'SE' since older vers cannot be overwritten after closing
+        self.valid_fn=True
+        if not version.isdigit() or version<0:
+            self.valid_fn=False
+        if version is None:
+            self.valid_fn=True
 
-        if create and filename not in mycontext['version_history']:
-            self.fn=filename+'0'
-            mycontext['version_history'][filename]=[0]
-            self.file = openfile(self.fn,True)
-            self.newfile=True
-        # if not create just open file
-        else:
-            self.newfile=False
-            # if specified version, retrieve it, else retrieve latest version
-            if not version:
-                self.fn=filename+str(mycontext['version_history'][filename][-1])
+        #check filename
+        if not filename or filename[0]=='.':
+            self.valid_fn=False
+        for c in filename:
+            if c.isalpha():
+                if c.isupper():
+                    self.valid_fn=False
+            elif c.isdigit():
+                continue
+            elif c=='.' or c=='_' or c=='-':
+                continue
             else:
-                self.fn=filename+str(mycontext['version_history'][filename][version])
-            self.file = openfile(self.fn,False)
+                self.valid_fn=False
+
+
+        if self.valid_fn:
+            # globals
+
+            mycontext['debug'] = True
+            if ‘version_history' not in mycontext:
+                mycontext['version_history']={}
+            # local (per object) reference to the underlying file
+            # make the ver.0 file, no longer required to write 'SE' since older vers cannot be overwritten after closing
+
+            if create and filename not in mycontext['version_history']:
+                self.fn=filename+'0'
+                mycontext['version_history'][filename]=[0]
+                self.file = openfile(self.fn,True)
+                self.newfile=True
+            # if not create just open file
+            else:
+                self.newfile=False
+                # if specified version, retrieve it, else retrieve latest version
+                if not version:
+                    self.fn=filename+str(mycontext['version_history'][filename][-1])
+                else:
+                    if version>=len(mycontext['version_history'][filename]):
+                        version=len(mycontext['version_history'][filename]-1
+                    self.fn=filename+str(mycontext['version_history'][filename][version])
+                self.file = openfile(self.fn,False)
 
 
     def writeat(self,data,offset):
