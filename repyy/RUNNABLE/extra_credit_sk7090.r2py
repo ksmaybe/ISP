@@ -2,6 +2,7 @@
 Shang Ke
 sk7090
 
+This is the extra credit version that creates multiple versions of the file
 
 Note:
     This security layer uses encasementlib.r2py, restrictions.default, repy.py and Python
@@ -21,13 +22,12 @@ class ABFile():
         # globals
         mycontext['debug'] = True
         # local (per object) reference to the underlying file
-        self.Afn = filename+'.a'
-        self.Bfn = filename+'.b'
 
-        # make the A file and add 'SE' to the readat file if new file
-        if create and self.Afn not in listfiles():
-            self.Afile = openfile(self.Afn,True)
-            self.Afile.writeat('SE',0)
+        # make the ver.1 file and add 'SE' to the readat file if new file
+
+        if create:
+            self.file1 = openfile(self.Afn,True)
+            self.file1.writeat('SE',0)
 
         # if not create just open file
         else:
