@@ -1,0 +1,217 @@
+"""
+This security layer inadequately handles A/B storage for files in RepyV2.
+
+Note:
+    This security layer uses encasementlib.r2py, restrictions.default, repy.py and Python
+    Also you need to give it an application to run.
+    python repy.py restrictions.default encasementlib.r2py [security_layer].r2py [attack_program].r2py
+
+"""
+TYPE = "type"
+ARGS = "args"
+RETURN = "return"
+EXCP = "exceptions"
+TARGET = "target"
+FUNC = "func"
+OBJC = "objc"
+
+class ABFile:
+
+    def __init__(self, filename, create):
+        # globals
+        mycontext['debug'] = False
+        mycontext['lock'] = createlock()
+
+        # if filename is not valid, exit
+        if not filename_is_valid(filename):
+            exitall()
+
+        self.a_filename = filename + '.a'
+        self.b_filename = filename + '.b'
+
+        # if create: make the files and add 'SE' to the a_file
+        if create and self.a_filename not in listfiles():
+            self.b_file = openfile(self.b_filename, True)
+
+            self.a_file = openfile(self.a_filename, True)
+            mycontext['lock'].acquire(True)
+            self.a_file.writeat('SE', 0)
+            mycontext['lock'].release()
+
+        # if not create: open the existing files
+        else:
+            try:
+                self.a_file = openfile(self.a_filename, False)
+
+                # copy the existing contents of a_file into b_file
+                self.b_file = openfile(self.b_filename, True)
+                mycontext['lock'].acquire(True)
+                a_file_content = self.a_file.readat(None, 0)
+                mycontext['lock'].release()
+
+                mycontext['lock'].acquire(True)
+                self.b_file.writeat(a_file_content, 0)
+                mycontext['lock'].release()
+            except:
+                # if cannot open a_file, exit
+                exitall()
+    def writeat(self, data, offset):
+        # if offset is negative
+        if offset < 0:
+            return
+
+        # if offset is greater than the len of the file
+        # Use locks during all read/write operations
+        mycontext['lock'].acquire(True)
+        b_file_content = self.b_file.readat(None, 0)
+        # lock release after reading
+        mycontext['lock'].release()
+        if offset > len(b_file_content):
+            return
+
+        # Use locks during all read/write operations
+        mycontext['lock'].acquire(True)
+        # Write the requested data to the b_file using the sandbox's writeat call
+        self.b_file.writeat(data, offset)
+        # lock release after writing
+        mycontext['lock'].release()
+
+    def readat(self, bytes, offset):
+        if offset < 0:
+            return ""
+
+        # Use locks during all read/write operations
+        mycontext['lock'].acquire(True)
+
+        try:
+            # Check that offset is not greater than the file length
+            # Read from the a_file using the sandbox's readat...
+            file_data = self.a_file.readat(bytes, offset)
+            mycontext['lock'].release()
+            return file_data
+
+        except:
+            mycontext['lock'].release()
+            return ""
+
+    def close(self):
+        # Use locks during all read/write operations
+        mycontext['lock'].acquire(True)
+        a_file_content = self.a_file.readat(None, 0)
+        b_file_content = self.b_file.readat(None, 0)
+        mycontext['lock'].release()
+
+        if len(b_file_content) == 0:
+            # Lock before writing, Release after writing
+            mycontext['lock'].acquire(True)
+            self.b_file.writeat(a_file_content, 0)
+            mycontext['lock'].release()
+            self.a_file.close()
+            self.b_file.close()
+            return
+        try:
+            # check that both a_file_content and b_file_content is valid
+            if file_is_valid(a_file_content) and file_is_valid(b_file_content):
+                # close, remove and open new
+                self.a_file.close()
+                removefile(self.a_filename)
+                self.a_file = openfile(self.a_filename, True)
+
+                # Lock before writing, Release after writing
+                mycontext['lock'].acquire(True)
+                self.a_file.writeat(b_file_content, 0)
+                mycontext['lock'].release()
+        except:
+            pass
+
+        self.a_file.close()
+        self.b_file.close()
+        removefile(self.b_filename)
+
+
+def ABopenfile(filename, create):
+    return ABFile(filename, create)
+
+
+def file_is_valid(file_content):
+    """
+    This function is checks if a file is valid
+    Check if file contents starts with 'S' and ends with 'E'
+    :param file_content:
+    :return: Bool
+    """
+
+    file_content_as_list = list(file_content)
+    if file_content_as_list[0] == 'S' and file_content_as_list[-1] == 'E':
+        return True
+    return False
+
+
+def filename_is_valid(filename):
+    """
+        Checking if the filename is valid
+        Filenames may
+         - only be in the current directory,
+         - [X] only contain lowercase letters
+         - [X] numbers,
+         - the hyphen
+         - underscore
+         - and period characters
+         - [X] filenames cannot be '.', '..', the blank string or start with a period
+         - [X] Filenames must be no more than 120 characters long.
+    """
+    if len(filename) > 120:
+        return False
+    # if not filename.isalnum():
+    #     return False
+    if not filename.islower():
+        return False
+    if filename == "." or filename == ".." or filename == "":
+        return False
+    if filename[0] == ".":
+        return False
+
+    return True
+
+
+# The code here sets up type checking and variable hiding for you.  You
+# should not need to change anything below here.
+sec_file_def = {
+    "obj-type": ABFile,
+    "name": "ABFile",
+    "writeat": {
+        "type": "func",
+        "args": (str, (int, long)),
+        "exceptions": Exception,
+        "return": (int, type(None)),
+        "target": ABFile.writeat
+    },
+    "readat": {
+        "type": "func",
+        "args": (
+            (int, long, type(None)),
+            (int, long)
+        ),
+        "exceptions": Exception,
+        "return": str,
+        "target": ABFile.readat
+    },
+    "close": {
+        "type": "func",
+        "args": None,
+        "exceptions": None,
+        "return": (bool, type(None)),
+        "target": ABFile.close
+    }
+}
+
+CHILD_CONTEXT_DEF["ABopenfile"] = {
+    TYPE: OBJC,
+    ARGS: (str, bool),
+    EXCP: Exception,
+    RETURN: sec_file_def,
+    TARGET: ABopenfile
+}
+
+# Execute the user code
+secure_dispatch_module()
