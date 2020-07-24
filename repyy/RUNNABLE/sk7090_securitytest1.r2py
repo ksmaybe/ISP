@@ -1,23 +1,51 @@
+"""
 #sk7090
 #Test for accuracy
 
-# New File Operation
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
 
 # Clean up of existing file
-if "testfile.txt.a" in listfiles():
- removefile("testfile.txt.a")
-if "testfile.txt.b" in listfiles():
- removefile("testfile.txt.b")
+if "testing.png.a" in listfiles():
+    removefile("testing.png.a")
+if "testing.png.b" in listfiles():
+    removefile("testing.png.b")
 
-# Open File Function Call
-myfile=ABopenfile("testfile.txt",True)  #Create an AB file
+if "1testing.png.a" in listfiles():
+    removefile("1testing.png.a")
+if "1testing.png.b" in listfiles():
+    removefile("1testing.png.b")
+
+#Valid moves
+# Open New Testing File
+file=ABopenfile("testing.png",True)
 
 try:
- # Empty/New File should have contents 'SE' satisfying the requirement
- assert('SE' == myfile.readat(2,0))
- # Close the file:
- myfile.close()
+    file.writeat('E3',2)
 except:
- myfile.close()
- # Error Handle or Failure Condition
- log("Empty file is not handled properly!")
+    log("Accuracy Bug: writing to file error")
+
+try:
+    file.writeat('^&E',4)
+except:
+    log("Accuracy Bug: Adding to file error")
+
+try:
+    file.close()
+except:
+    log("Accuracy Bug: Closing file error")
+
+try:
+    file=ABopenfile("testing.png",False)
+except:
+    log("Accuracy Bug: Opening file error")
+try:
+    assert(file.readat(None, 0)=="SEE3^&E")
+except:
+    log("Accuracy Bug: File not written correctly")
+
+
+#Invalid Moves
+
+    assert(file.readat(None, 0)=="SEE3^&E")
