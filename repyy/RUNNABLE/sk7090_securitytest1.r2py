@@ -3,7 +3,7 @@
 #Test for accuracy
 
 Command to run
-FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_securitytest1*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
 """
 
 # Clean up of existing file
@@ -21,81 +21,135 @@ if "1testing.png.b" in listfiles():
 # Open New Testing File
 file=ABopenfile("testing.png",True)
 
+
+log("test close\n")
+try:
+    file.close()
+except:
+    log("Accuracy bug: Can't close after creation")
+
+
+file=ABopenfile("testing.png",False)
+log("test 1\n")
+
 try:
     file.writeat('E3',2)
 except:
     log("Accuracy Bug: writing to file error\n")
-
+log("test 2\n")
 try:
     file.writeat('^&E',4)
 except:
     log("Accuracy Bug: Adding to file error\n")
-
+log("test 3\n")
 try:
     file.close()
 except:
     log("Accuracy Bug: Closing file error\n")
+log("test 4\n")
 try:
     file=ABopenfile("testing.png",False)
 except:
     log("Accuracy Bug: Opening file error\n")
-
+log("test 5\n")
 try:
     assert(file.readat(None, 0)=="SEE3^&E")
 except:
     log("Accuracy Bug: File not written correctly\n")
+log("test 6\n")
 try:
     file.close()
 except:
     log("Accuracy Bug: Closing file error\n")
 
+log("test multi write\n")
+try:
+    file1=ABopenfile("testing1",True)
+    file2=ABopenfile("testing2",True)
+    file3=ABopenfile("testing3",True)
+    file1.writeat("Testing2E",2)
+    file1.close()
+    file1=ABopenfile("testing1",False)
+    file2.writeat(file1.readat(None,0),2)
+    file2.close()
+    file2=ABopenfile("testing2",False)
+    file3.writeat(file2.readat(None,0),2)
+    file3.close()
+    file3=ABopenfile("testing3",False)
+    assert(file3.readat(None,0)=="SESESETesting2E")
+    file3.close()
+except:
+    log("Accuracy Bug: Writing to multiple files\n")
+
+
+
+
 #invalid moves
 #file names
-
+log("test 7\n")
 try:
-    file=ABopenfile("A.png",True)
-    file.close()
+    file=ABopenfile("testfilE",True)
+    file.writeat('E3',2)
     log("Accuracy Bug: Capital Letters in filename\n")
+    file.close()
 except:
     pass
-
+log("test 8\n")
 try:
     file=ABopenfile(".",True)
-    file.close()
+    file.writeat('E3',2)
     log("Accuracy Bug: period in file name\n")
+    file.close()
 except:
     pass
+log("test 9\n")
+
 try:
     file=ABopenfile("..",True)
-    file.close()
+    file.writeat('E3',2)
     log("Accuracy Bug: <..> in filename\n")
+    file.close()
 except:
     pass
-
+log("test 10\n")
 try:
     file=ABopenfile("",True)
-    file.close()
+    file.writeat('E3',2)
     log("Accuracy Bug: blank filename\n")
+    file.close()
 except:
     pass
-
+log("test 11\n")
 try:
-    file=ABopenfile(".png",True)
-    file.close()
+    file=ABopenfile("..png",True)
+    file.writeat('E3',2)
     log("Accuracy Bug: file start with period\n")
+    file.close()
 except:
     pass
+log("test 12\n")
 
 try:
-    file=ABopenfile("testfile!@#$%^&*().png",True)
-    file.close()
+    file=ABopenfile("testfilE!@#$%^&*().png",True)
+    file.writeat('E3',2)
     log("Accuracy Bug: Special characters in filename\n")
+    file.close()
 except:
     pass
+log("test 13\n")
 
 try:
-    file=ABopenfile("A.png",True)
+    file=ABopenfile("testfile3.png",True)
     file.close()
-    log("Accuracy Bug: Capital Letters in filename\n")
+    log(file.readat(None,0)+'\n')
+    log("Accuracy Bug: Reading after closing file\n")
+except:
+    pass
+log("test 14\n")
+try:
+    file=ABopenfile("testfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfiletestfile",True)
+    file.writeat('E3',2)
+    log("Accuracy Bug: More than 120 chars in filename\n")
+    file.close()
 except:
     pass
