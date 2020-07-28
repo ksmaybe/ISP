@@ -24,28 +24,78 @@ file=ABopenfile("testing.png",True)
 try:
     file.writeat('E3',2)
 except:
-    log("Accuracy Bug: writing to file error")
+    log("Accuracy Bug: writing to file error\n")
 
 try:
     file.writeat('^&E',4)
 except:
-    log("Accuracy Bug: Adding to file error")
+    log("Accuracy Bug: Adding to file error\n")
 
 try:
     file.close()
 except:
-    log("Accuracy Bug: Closing file error")
-
+    log("Accuracy Bug: Closing file error\n")
 try:
     file=ABopenfile("testing.png",False)
 except:
-    log("Accuracy Bug: Opening file error")
+    log("Accuracy Bug: Opening file error\n")
+
 try:
     assert(file.readat(None, 0)=="SEE3^&E")
 except:
-    log("Accuracy Bug: File not written correctly")
+    log("Accuracy Bug: File not written correctly\n")
+try:
+    file.close()
+except:
+    log("Accuracy Bug: Closing file error\n")
 
+#invalid moves
+#file names
 
-#Invalid Moves
+try:
+    file=ABopenfile("A.png",True)
+    file.close()
+    log("Accuracy Bug: Capital Letters in filename\n")
+except:
+    pass
 
-    assert(file.readat(None, 0)=="SEE3^&E")
+try:
+    file=ABopenfile(".",True)
+    file.close()
+    log("Accuracy Bug: period in file name\n")
+except:
+    pass
+try:
+    file=ABopenfile("..",True)
+    file.close()
+    log("Accuracy Bug: <..> in filename\n")
+except:
+    pass
+
+try:
+    file=ABopenfile("",True)
+    file.close()
+    log("Accuracy Bug: blank filename\n")
+except:
+    pass
+
+try:
+    file=ABopenfile(".png",True)
+    file.close()
+    log("Accuracy Bug: file start with period\n")
+except:
+    pass
+
+try:
+    file=ABopenfile("testfile!@#$%^&*().png",True)
+    file.close()
+    log("Accuracy Bug: Special characters in filename\n")
+except:
+    pass
+
+try:
+    file=ABopenfile("A.png",True)
+    file.close()
+    log("Accuracy Bug: Capital Letters in filename\n")
+except:
+    pass
