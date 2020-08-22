@@ -1,0 +1,27 @@
+"""
+#sk7090
+#Test for security
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
+# Clean up of existing file
+if "testing.png.a" in listfiles():
+    removefile("testing.png.a")
+if "testing.png.b" in listfiles():
+    removefile("testing.png.b")
+
+
+
+# Try save invalid string
+try:
+    file=ABopenfile("testing.png",True)  #Create an AB file
+
+    file.writeat("HOOOOOO",2)
+
+
+    file.close()
+    file=ABopenfile("testing.png",False)
+    assert(len(file.readat(None,0))>2)
+    log("Invalid write saved in A file\n")
+except:
+    pass

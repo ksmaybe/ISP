@@ -1,0 +1,24 @@
+"""
+#sk7090
+#Test for security
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
+# Clean up of existing file
+if "testing.png.a" in listfiles():
+    removefile("testing.png.a")
+if "testing.png.b" in listfiles():
+    removefile("testing.png.b")
+
+
+
+# Open twice same file wiothout closing
+try:
+    file=ABopenfile("testing.png",True)  #Create an AB file
+    file1=ABopenfile("testing.png",False)
+    file1.writeat("SE",2)
+    file1.close()
+    log("File opened twice without closing\n")
+except:
+    pass
+

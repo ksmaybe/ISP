@@ -1,0 +1,44 @@
+"""
+#sk7090
+#Test for accuracy
+
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
+
+# Clean up of existing file
+if "testing1.a" in listfiles():
+    removefile("testing1.a")
+if "testing1.b" in listfiles():
+    removefile("testing1.b")
+
+if "testing2.a" in listfiles():
+    removefile("testing2.a")
+if "testing2.b" in listfiles():
+    removefile("testing2.b")
+
+if "testing3.a" in listfiles():
+    removefile("testing3.a")
+if "testing3.b" in listfiles():
+    removefile("testing3.b")
+
+
+log("test multi write\n")
+try:
+    file1=ABopenfile("testing1",True)
+    file2=ABopenfile("testing2",True)
+    file3=ABopenfile("testing3",True)
+    file1.writeat("Testing2E",2)
+    file1.close()
+    file1=ABopenfile("testing1",False)
+    file2.writeat(file1.readat(None,0),2)
+    file2.close()
+    file2=ABopenfile("testing2",False)
+    file3.writeat(file2.readat(None,0),2)
+    file3.close()
+    file3=ABopenfile("testing3",False)
+    assert(file3.readat(None,0)=="SESESETesting2E")
+    file3.close()
+except:
+    log("Accuracy Bug: Writing to multiple files\n")
+

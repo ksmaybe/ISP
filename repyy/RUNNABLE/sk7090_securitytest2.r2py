@@ -2,9 +2,8 @@
 #sk7090
 #Test for security
 Command to run
-FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_securitytest2*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+FOR %r IN (reference_monitor_as*) DO @(ECHO %r under test & FOR %a IN (sk7090_securitytest2*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
 """
-
 # Clean up of existing file
 if "testing.png.a" in listfiles():
     removefile("testing.png.a")
@@ -18,14 +17,18 @@ if "testingfile3.png.b" in listfiles():
 
 
 # Open File Function Call
-myfile=ABopenfile("testfile.txt",True)  #Create an AB file
+file=ABopenfile("testing.png",True)  #Create an AB file
+#bypass writing A file
 
-try:
- # Empty/New File should have contents 'SE' satisfying the requirement
- assert('SE' == myfile.readat(2,0))
- # Close the file:
- myfile.close()
-except:
- myfile.close()
- # Error Handle or Failure Condition
- log("Empty file is not handled properly!")
+x=3
+
+#log(file.Afile.readat(None,0))
+#file.writeat("HOHOHOHO",2)
+log(file.readat(None,0),"\n")
+
+file.close()
+file=ABopenfile("testing.png",False)
+log(file.readat(None,0))
+
+
+

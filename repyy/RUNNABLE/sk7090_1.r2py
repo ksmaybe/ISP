@@ -1,0 +1,34 @@
+"""
+#sk7090
+#Test for accuracy
+
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
+
+# Clean up of existing file
+if "testing.png.a" in listfiles():
+    removefile("testing.png.a")
+if "testing.png.b" in listfiles():
+    removefile("testing.png.b")
+
+#Test writing to file
+# Open New Testing File
+file=ABopenfile("testing.png",True)
+
+log("test 1\n")
+try:
+    file.close()
+except:
+    log("Accuracy bug: Can't close after creation")
+
+
+file=ABopenfile("testing.png",False)
+try:
+    file.writeat('E3',2)
+except:
+    log("Accuracy Bug: writing to file error\n")
+try:
+    file.writeat('^&E',4)
+except:
+    log("Accuracy Bug: Adding to file error\n")

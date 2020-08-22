@@ -1,0 +1,24 @@
+"""
+#sk7090
+#Test for extra credit
+Command to run
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090extra_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+"""
+# Clean up of existing file
+if "testing.png0" in listfiles():
+    removefile("testing.png0")
+if "testing.png1" in listfiles():
+    removefile("testing.png1")
+
+#write ver 0, save, write ver 1, check ver 0
+try:
+    file=ABopenfile("testing.png",0,True)  #Create an AB file
+    file.writeat("EE",2)
+    file.close()
+    file1=ABopenfile("testing.png",1,True)
+    file1.writeat("LE",2)
+    file1.close()
+    file=ABopenfile("testing.png",0,False)
+    assert(file.readat(None,0)=="SEEE")
+except:
+    log("Version 0 not written properly\n")

@@ -3,7 +3,7 @@
 #Test for accuracy
 
 Command to run
-FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_securitytest1*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+FOR %r IN (reference_monitor_*) DO @(ECHO %r under test & FOR %a IN (sk7090_*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
 """
 
 # Clean up of existing file
