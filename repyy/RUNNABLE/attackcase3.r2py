@@ -16,9 +16,9 @@ try:
   #can set length to char in middle of file to pass validation even though not 
   myfile.writeat("S"+"A"*9,0)
   myfile.writeat("SE",0)
-  log("3 to close")
+  #log("3 to close")
   myfile.close()
-  log("3 after close")
+  #log("3 after close")
   myfile=ABopenfile("testfile.txt",True)
   data = myfile.readat(None,0)
   if len(data) > 0:

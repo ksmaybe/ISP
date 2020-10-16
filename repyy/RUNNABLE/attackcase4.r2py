@@ -18,7 +18,7 @@ myfile.writeat("Snake shakE",0)
 myfile.close()
 
 myfile=ABopenfile("testfile.txt", True)  #Reopen AB File
-log("test 4:    ",myfile.readat(None,0),'\n')
+#log("test 4:    ",myfile.readat(None,0),'\n')
 try:
     assert('Snake shakE' == myfile.readat(11,0))
     myfile.close()

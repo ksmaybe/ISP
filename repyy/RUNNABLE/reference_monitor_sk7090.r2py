@@ -2,7 +2,8 @@
 Shang Ke
 sk7090
 
-
+FOR %a IN (attackcase*) DO @(ECHO %a under test & FOR %r IN (reference_monitor_sk7090*) DO @py -2 repy.py restrictions.default encasementlib.r2py %r %a)
+updated bug fixes for part 3 with attackcases 6-10
 Note:
     This security layer uses encasementlib.r2py, restrictions.default, repy.py and Python
     Also you need to give it an application to run.
@@ -18,6 +19,7 @@ OBJC="objc"
 
 class ABFile():
     def __init__(self,filename,create):
+
         self.valid_fn=True
         #check filename
         if not filename or filename[0]=='.':
@@ -32,33 +34,58 @@ class ABFile():
                 continue
             else:
                 self.valid_fn=False
+        self.Afn = filename+'.a'
+        self.Bfn = filename+'.b'
+        #Check for invalid command where file has not been created and "create" parameter set to False
+        if not create and self.Afn not in listfiles():
+            self.valid_fn=False
 
-
+        #check for lock
+        if 'lock'+filename in mycontext:
+            self.lock=mycontext['lock'+filename]
+            if not self.lock.acquire(False):
+                self.valid_fn=False
+                raise Exception
+        else:
+            self.lock=createlock()
+            mycontext['lock'+filename]=self.lock
+            self.lock.acquire(True)
 
         # globals
         mycontext['debug'] = True
         # local (per object) reference to the underlying file
+
+        #if valid_fn check fails, file would not be created or opened
         if self.valid_fn:
-            self.Afn = filename+'.a'
-            self.Bfn = filename+'.b'
 
             # make the A file and add 'SE' to the readat file if new file
             if create and self.Afn not in listfiles():
                 self.Afile = openfile(self.Afn,True)
                 self.Afile.writeat('SE',0)
 
-            # if not create just open file
+
+            # if not create just open file or if create is True and file already exists, ignore create flag
             else:
                 self.Afile = openfile(self.Afn,False)
 
             #create new version B file
             self.Bfile = openfile(self.Bfn,True)
             self.Bfile.writeat(self.Afile.readat(None,0),0)
+        else:
+            self.lock.release()
 
 
     def writeat(self,data,offset):
         # Write the requested data to the B file using the sandbox's writeat call
-        self.Bfile.writeat(data,offset)
+        valid_write=True
+        #check if segment of file exists before writing
+        if offset>1:
+            try:
+                stuff=self.Bfile.readat(1,offset-1)
+            except:
+                valid_write=False
+        if valid_write:
+            self.Bfile.writeat(data,offset)
 
     def readat(self,bytes,offset):
         # Read from the A file using the sandbox's readat...
@@ -74,6 +101,7 @@ class ABFile():
 
             self.Bfile.close()
             self.Afile.close()
+            self.lock.release()
         except:
             pass
 
